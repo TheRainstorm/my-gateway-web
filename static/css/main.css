@@ -36,6 +36,19 @@ p {
   line-height: 1.5;
   margin-bottom: 20px; }
 
+/* 设置整个页面的背景图 */
+body {
+  background-image: url("../image/background.jpg");
+  background-size: cover; /* 将背景图填充到整个页面 */
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  margin: 0;
+  padding: 0;
+}
+
 header {
   position: absolute;
   width: 100%;
@@ -45,7 +58,7 @@ header {
   background-size: cover;
   -o-background-size: cover;
   background-position: center;
-  background-image: url("../image/background.jpg");
+  /* background-image: url("../image/background.jpg"); */
   text-align: center;
   color: white; }
   header .header-content {
@@ -90,6 +103,14 @@ header {
         display: inline-block; }
         header .header-content .btn-grid + .btn-grid {
           margin-left: 1em; } }
+
+footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  padding: 25px 0;
+  text-align: center;
+}
 
 .text-primary {
   color: #F05F40; }
