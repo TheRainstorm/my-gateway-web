@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>to xxx 名字</title>
+  <link rel="stylesheet" href="/static/css/bootstrap.min.css" type="text/css" />
+  <style>
+    :root {
+      --bg: #130818;
+      --bg-soft: #22102b;
+      --pink-main: #ff5fa2;
+      --pink-soft: #ff99c8;
+      --text: #ffe8f3;
+      --muted: #ffc7df;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: radial-gradient(circle at 20% 20%, #2c1238 0%, var(--bg) 55%);
+      color: var(--text);
+      font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+    }
+
+    #loader, #scene {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    #loader {
+      z-index: 10;
+      background: linear-gradient(145deg, rgba(19, 8, 24, 0.95), rgba(34, 16, 43, 0.96));
+      transition: opacity 480ms ease;
+    }
+
+    #loader.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .loader-card {
+      width: min(480px, 92vw);
+      text-align: center;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 196, 225, 0.2);
+      border-radius: 14px;
+      padding: 26px 22px;
+      backdrop-filter: blur(4px);
+      box-shadow: 0 14px 45px rgba(0, 0, 0, 0.28);
+    }
+
+    .loader-title {
+      margin: 0 0 14px;
+      letter-spacing: 0.08em;
+      font-size: clamp(22px, 6vw, 30px);
+      color: #ffd6ea;
+    }
+
+    .loader-status {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 14px;
+      min-height: 20px;
+    }
+
+    .loader-percent {
+      margin-top: 10px;
+      font-size: 26px;
+      font-weight: 700;
+      color: #ffe8f5;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .progress {
+      margin: 0;
+      height: 14px;
+      background-color: rgba(255, 255, 255, 0.14);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      background: linear-gradient(90deg, var(--pink-main), var(--pink-soft));
+      transition: width 220ms ease;
+      box-shadow: 0 0 14px rgba(255, 95, 162, 0.55);
+    }
+
+    #scene {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 600ms ease;
+      z-index: 2;
+    }
+
+    #scene.ready {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    #particles {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+
+    .content {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      width: 100%;
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 18px;
+    }
+
+    .title {
+      margin: 0;
+      font-size: clamp(26px, 7vw, 56px);
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      color: #ffd7ec;
+      text-shadow: 0 3px 20px rgba(255, 111, 177, 0.35);
+    }
+
+    .subtitle {
+      margin: 10px 0 0;
+      font-size: clamp(13px, 2.8vw, 16px);
+      color: rgba(255, 220, 238, 0.8);
+    }
+
+    .heart-wrap {
+      margin: 36px auto 28px;
+      width: clamp(130px, 34vw, 230px);
+      aspect-ratio: 1 / 1;
+      position: relative;
+      filter: drop-shadow(0 0 24px rgba(255, 95, 162, 0.58));
+      animation: beat 1.15s ease-in-out infinite;
+      transform-origin: 50% 62%;
+    }
+
+    .heart {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 48%;
+      height: 48%;
+      transform: translate(-50%, -34%) rotate(45deg);
+      background: linear-gradient(145deg, #ff2c84, #ff84b6);
+      border-radius: 10%;
+      box-shadow: inset -8px -10px 16px rgba(255, 255, 255, 0.18);
+    }
+
+    .heart::before,
+    .heart::after {
+      content: "";
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: inherit;
+      border-radius: 50%;
+    }
+
+    .heart::before {
+      left: -50%;
+      top: 0;
+    }
+
+    .heart::after {
+      left: 0;
+      top: -50%;
+    }
+
+    .bgm-btn {
+      border: none;
+      outline: none;
+      margin-top: 8px;
+      min-width: 150px;
+      min-height: 44px;
+      padding: 10px 18px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 0.06em;
+      background: linear-gradient(120deg, #ec4089, #f06292);
+      box-shadow: 0 8px 18px rgba(255, 95, 162, 0.36);
+      cursor: pointer;
+      transition: transform 160ms ease, filter 160ms ease, opacity 160ms ease;
+      user-select: none;
+    }
+
+    .bgm-btn:hover,
+    .bgm-btn:focus-visible {
+      transform: translateY(-1px);
+      filter: brightness(1.08);
+    }
+
+    .bgm-btn.is-on {
+      background: linear-gradient(120deg, #d81b60, #ec407a);
+    }
+
+    .bgm-hint {
+      margin-top: 10px;
+      font-size: 12px;
+      color: rgba(255, 210, 232, 0.76);
+      min-height: 18px;
+    }
+
+    @keyframes beat {
+      0%, 100% { transform: scale(1); }
+      15% { transform: scale(1.09); }
+      30% { transform: scale(1); }
+      45% { transform: scale(1.12); }
+      60% { transform: scale(1.01); }
+      75% { transform: scale(1.08); }
+    }
+
+    @media (max-width: 700px) {
+      .heart-wrap {
+        margin-top: 30px;
+        margin-bottom: 22px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .heart-wrap {
+        animation-duration: 2.5s;
+      }
+
+      .progress-bar,
+      #loader,
+      #scene,
+      .bgm-btn {
+        transition: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="loader" role="status" aria-live="polite">
+    <div class="loader-card">
+      <h1 class="loader-title">Loading Love...</h1>
+      <div class="progress" aria-label="页面加载进度">
+        <div
+          id="progressBar"
+          class="progress-bar progress-bar-striped active"
+          role="progressbar"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-valuenow="0"
+          style="width: 0%"
+        ></div>
+      </div>
+      <div id="progressPercent" class="loader-percent">0%</div>
+      <div id="loaderStatus" class="loader-status">正在准备页面...</div>
+    </div>
+  </div>
+
+  <main id="scene" aria-hidden="true">
+    <canvas id="particles" aria-hidden="true"></canvas>
+    <section class="content">
+      <h1 class="title">to 王雅美</h1>
+      <p class="subtitle">粉色爱心已就位</p>
+      <div class="heart-wrap" aria-hidden="true">
+        <div class="heart"></div>
+      </div>
+      <button id="bgmBtn" class="bgm-btn" type="button" aria-pressed="false">
+        BGM: OFF
+      </button>
+      <div id="bgmHint" class="bgm-hint">点击按钮后开始播放</div>
+    </section>
+    <audio id="bgm" preload="metadata" src="/love/bgm.mp3"></audio>
+  </main>
+
+  <script>
+    (function () {
+      const loader = document.getElementById('loader');
+      const scene = document.getElementById('scene');
+      const progressBar = document.getElementById('progressBar');
+      const progressPercent = document.getElementById('progressPercent');
+      const loaderStatus = document.getElementById('loaderStatus');
+      const bgm = document.getElementById('bgm');
+      const bgmBtn = document.getElementById('bgmBtn');
+      const bgmHint = document.getElementById('bgmHint');
+      const canvas = document.getElementById('particles');
+      const ctx = canvas.getContext('2d');
+
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      let visualProgress = 0;
+      let targetProgress = 0;
+      let sceneReady = false;
+      let rafId = 0;
+
+      function setStatus(text) {
+        loaderStatus.textContent = text;
+      }
+
+      function setTargetProgress(value) {
+        targetProgress = Math.max(targetProgress, Math.min(100, value));
+      }
+
+      function renderProgress() {
+        if (sceneReady) {
+          visualProgress = 100;
+        } else {
+          const delta = targetProgress - visualProgress;
+          visualProgress += delta * 0.14;
+          if (Math.abs(delta) < 0.3) {
+            visualProgress = targetProgress;
+          }
+        }
+
+        const percent = Math.max(0, Math.min(100, Math.round(visualProgress)));
+        progressBar.style.width = percent + '%';
+        progressBar.setAttribute('aria-valuenow', String(percent));
+        progressPercent.textContent = percent + '%';
+
+        if (!sceneReady || percent < 100) {
+          requestAnimationFrame(renderProgress);
+        }
+      }
+
+      function onceWithTimeout(eventTarget, eventName, timeoutMs, onReady) {
+        let done = false;
+        const timer = window.setTimeout(() => {
+          if (done) return;
+          done = true;
+          onReady(false);
+        }, timeoutMs);
+
+        function finish(ok) {
+          if (done) return;
+          done = true;
+          window.clearTimeout(timer);
+          onReady(ok);
+        }
+
+        eventTarget.addEventListener(eventName, () => finish(true), { once: true });
+      }
+
+      function startParticles() {
+        const particles = [];
+        const center = { x: 0, y: 0 };
+        const dpr = Math.min(2, window.devicePixelRatio || 1);
+
+        function resize() {
+          const w = window.innerWidth;
+          const h = window.innerHeight;
+          canvas.width = Math.floor(w * dpr);
+          canvas.height = Math.floor(h * dpr);
+          canvas.style.width = w + 'px';
+          canvas.style.height = h + 'px';
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          center.x = w / 2;
+          center.y = h / 2;
+        }
+
+        function makeParticle() {
+          const angle = Math.random() * Math.PI * 2;
+          const radiusBase = Math.min(window.innerWidth, window.innerHeight) * 0.18;
+          const radius = radiusBase * (0.4 + Math.random() * 0.95);
+          const speed = reduceMotion ? 0.15 + Math.random() * 0.2 : 0.35 + Math.random() * 0.6;
+          const size = 1 + Math.random() * 2.5;
+          return {
+            x: center.x + Math.cos(angle) * radius,
+            y: center.y + Math.sin(angle) * radius,
+            vx: (Math.random() - 0.5) * speed,
+            vy: (Math.random() - 0.5) * speed - 0.18,
+            life: 70 + Math.random() * 120,
+            alpha: 0.35 + Math.random() * 0.55,
+            size,
+            color: Math.random() > 0.35 ? '255,132,182' : '255,220,240'
+          };
+        }
+
+        function initParticles() {
+          particles.length = 0;
+          const isMobile = window.innerWidth < 700;
+          const baseCount = reduceMotion ? 24 : (isMobile ? 56 : 95);
+          for (let i = 0; i < baseCount; i += 1) {
+            particles.push(makeParticle());
+          }
+        }
+
+        function draw() {
+          ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+          for (let i = 0; i < particles.length; i += 1) {
+            const p = particles[i];
+            p.life -= 1;
+            if (p.life <= 0) {
+              particles[i] = makeParticle();
+              continue;
+            }
+
+            p.x += p.vx;
+            p.y += p.vy;
+            p.vy -= 0.0003;
+
+            const fade = Math.max(0, Math.min(1, p.life / 95));
+            ctx.beginPath();
+            ctx.fillStyle = 'rgba(' + p.color + ',' + (p.alpha * fade) + ')';
+            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+            ctx.fill();
+          }
+
+          if (!document.hidden) {
+            rafId = requestAnimationFrame(draw);
+          }
+        }
+
+        resize();
+        initParticles();
+        draw();
+
+        window.addEventListener('resize', () => {
+          resize();
+          initParticles();
+        });
+
+        document.addEventListener('visibilitychange', () => {
+          if (document.hidden && rafId) {
+            cancelAnimationFrame(rafId);
+            rafId = 0;
+          } else if (!document.hidden && !rafId) {
+            draw();
+          }
+        });
+      }
+
+      async function prepareScene() {
+        requestAnimationFrame(renderProgress);
+        setStatus('正在初始化页面...');
+        setTargetProgress(10);
+
+        await new Promise((resolve) => requestAnimationFrame(resolve));
+        setStatus('正在准备动画引擎...');
+        startParticles();
+        setTargetProgress(55);
+
+        setStatus('正在缓冲音频资源...');
+        const audioReady = await new Promise((resolve) => {
+          if (bgm.readyState >= 1) {
+            resolve(true);
+            return;
+          }
+
+          onceWithTimeout(bgm, 'loadedmetadata', 9000, resolve);
+          try {
+            bgm.load();
+          } catch (e) {
+            resolve(false);
+          }
+        });
+
+        if (audioReady) {
+          setTargetProgress(85);
+          setStatus('音频资源就绪，正在完成渲染...');
+        } else {
+          setTargetProgress(78);
+          setStatus('音频较慢，页面先行可用');
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, 260));
+
+        setTargetProgress(100);
+        sceneReady = true;
+        scene.classList.add('ready');
+        scene.setAttribute('aria-hidden', 'false');
+        loader.classList.add('hidden');
+        setTimeout(() => loader.remove(), 620);
+      }
+
+      function setBgmState(isOn, hintText) {
+        bgmBtn.setAttribute('aria-pressed', isOn ? 'true' : 'false');
+        bgmBtn.textContent = isOn ? 'BGM: ON' : 'BGM: OFF';
+        bgmBtn.classList.toggle('is-on', isOn);
+        if (hintText) bgmHint.textContent = hintText;
+      }
+
+      bgmBtn.addEventListener('click', async () => {
+        if (bgm.paused) {
+          setBgmState(false, '正在尝试播放...');
+          try {
+            await bgm.play();
+            setBgmState(true, '正在播放');
+          } catch (err) {
+            setBgmState(false, '播放失败，请再次点击重试');
+          }
+        } else {
+          bgm.pause();
+          setBgmState(false, '已暂停');
+        }
+      });
+
+      setBgmState(false, '点击按钮后开始播放');
+
+      // 总超时兜底：避免弱网下一直卡在加载层
+      const hardTimeout = setTimeout(() => {
+        if (sceneReady) return;
+        setStatus('网络较慢，先展示页面');
+        setTargetProgress(100);
+        sceneReady = true;
+        scene.classList.add('ready');
+        scene.setAttribute('aria-hidden', 'false');
+        loader.classList.add('hidden');
+        setTimeout(() => loader.remove(), 620);
+      }, 15000);
+
+      prepareScene().finally(() => {
+        clearTimeout(hardTimeout);
+      });
+    })();
+  </script>
+</body>
+</html>
